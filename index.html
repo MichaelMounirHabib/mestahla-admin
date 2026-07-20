@@ -374,6 +374,29 @@ let users=[
   {id:4,name:'Mona Hassan',email:'mona@example.com',stage:'Pregnant',week:16,status:'active',joined:'Jul 2025',sub:'free'},
   {id:5,name:'Laila Nasser',email:'laila@example.com',stage:'Trying',week:'—',status:'inactive',joined:'Jun 2025',sub:'free'},
 ];
+const EVENTS_KEY = 'mestahla_events_v2';
+
+// Load events saved by admin into shared localStorage on startup
+(function(){
+  try {
+    const raw = localStorage.getItem(EVENTS_KEY);
+    if (raw) {
+      const stored = JSON.parse(raw);
+      if (Array.isArray(stored) && stored.length) {
+        events.splice(0, events.length, ...stored);
+      }
+    }
+  } catch(e) {}
+})();
+
+// Sync current events array to localStorage (called after every mutation)
+function syncEvents() {
+  try {
+    localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+    const b=document.getElementById('sync-badge');
+    if(b){b.style.display='inline';clearTimeout(b._t);b._t=setTimeout(()=>b.style.display='none',3000);}
+  } catch(e) {}
+}
 let nextId = 100;
 
 /* ── NAVIGATION ──────────────────────────────────────────── */
@@ -444,7 +467,7 @@ function renderEvents(){
         <span class="table-title">All Events (${events.length})</span>
         <div class="table-toolbar-right">
           <input class="search-input" placeholder="🔍  Search events..." oninput="filterTable(this,'events-tbody','event')">
-          <button class="add-btn" onclick="openEventModal()">+ Add Event</button>
+          <button class="add-btn" onclick="openEventModal()">+ Add Event</button><span id="sync-badge" style="font-size:11px;font-weight:600;color:var(--teal);background:var(--brand-lt);padding:4px 10px;border-radius:20px;display:none">✓ Synced to user app</span>
         </div>
       </div>
       <div class="tbl-wrap"><table>
@@ -588,17 +611,17 @@ function saveEvent(id){
     active:document.getElementById('fe-active').value==='true',
     desc:document.getElementById('fe-desc').value||'',
   };
-  if(id){const i=events.findIndex(e=>e.id===id);if(i>=0)events[i]={...events[i],...d};showToast('Event updated ✓');}
-  else{events.push({id:++nextId,...d});showToast('Event added ✓');}
-  closeModal(); renderEvents();
+  if(id){const i=events.findIndex(e=>e.id===id);if(i>=0)events[i]={...events[i],...d};}
+  else{events.push({id:++nextId,...d});}
+  syncEvents(); closeModal(); renderEvents(); showToast(id ? "Event updated ✓" : "Event added ✓");
 }
 function deleteItem(type,id){
   if(!confirm('Delete this item?')) return;
   const map={events,offers,articles,brands,malls:mallsData,users};
   const arr=map[type]; const i=arr.findIndex(x=>x.id===id);
-  if(i>=0){arr.splice(i,1);showToast('Deleted ✓');}
+  if(i>=0){arr.splice(i,1); if(type==='events') syncEvents(); showToast('Deleted ✓');}
   const renders={events:renderEvents,offers:renderOffers,articles:renderArticles,brands:renderBrands,malls:renderMalls,users:renderUsers};
-  (renders[type]||renderDashboard)();
+  (renders[type]||renderEvents)();
 }
 
 /* ── OFFERS SECTION ──────────────────────────────────────── */
