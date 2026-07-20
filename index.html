@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
@@ -323,11 +323,12 @@ function toggleTheme(){
 
 /* ── DATA ─────────────────────────────────────────────────── */
 let events=[
-  {id:1,title:'Cairo Bump & Baby Fair 2025',date:'2025-07-12',time:'10:00',location:'Cairo Festival City Mall',price:0,status:'confirmed',active:true},
-  {id:2,title:'Prenatal Yoga Workshop',date:'2025-07-16',time:'17:00',location:'Maadi Sporting Club',price:150,status:'waitlisted',active:true},
-  {id:3,title:'Baby First Aid Masterclass',date:'2025-07-18',time:'11:00',location:'Online · Zoom',price:0,status:'confirmed',active:true},
-  {id:4,title:'Newborn Photography Workshop',date:'2025-07-21',time:'14:00',location:'Garden City, Cairo',price:200,status:'free',active:true},
-  {id:5,title:'Breastfeeding Support Circle',date:'2025-07-24',time:'18:00',location:'Online · Google Meet',price:0,status:'free',active:false},
+  {id:1,title:'Cairo Bump & Baby Fair',date:'2026-07-12',dateEnd:'',time:'10:00',doorsOpen:'09:30',venue:'Cairo Festival City Mall',venueAddress:'Cairo Festival City, New Cairo, Cairo',locCat:'New Cairo',category:'Fair',organizer:'Mestahla',priceMin:0,priceMax:0,priceDisplay:'Free',ticketTiers:[{name:'General Admission',price:0}],ticketUrl:'',imageUrl:'',emoji:'🎪',ageRestriction:'All ages',language:'Arabic, English',facilities:'Parking, Food & Beverages, Stroller Access',status:'confirmed',active:true,desc:'The biggest baby and maternity fair in Egypt.'},
+  {id:2,title:'Prenatal Yoga Workshop',date:'2026-07-16',dateEnd:'',time:'17:00',doorsOpen:'16:45',venue:'Maadi Sporting Club',venueAddress:'Maadi Sporting Club, Maadi, Cairo',locCat:'Maadi',category:'Workshop',organizer:'Dr. Nour Wellness',priceMin:150,priceMax:150,priceDisplay:'EGP 150',ticketTiers:[{name:'General',price:150}],ticketUrl:'',imageUrl:'',emoji:'🧘',ageRestriction:'Pregnant women only',language:'Arabic',facilities:'Parking, Changing Rooms',status:'waitlisted',active:true,desc:'Yoga for pregnant women in second and third trimester.'},
+  {id:3,title:'Baby First Aid Masterclass',date:'2026-07-18',dateEnd:'',time:'11:00',doorsOpen:'',venue:'Online · Zoom',venueAddress:'Online',locCat:'Online',category:'Masterclass',organizer:'Pediatric Care Egypt',priceMin:0,priceMax:0,priceDisplay:'Free',ticketTiers:[{name:'Free Registration',price:0}],ticketUrl:'',imageUrl:'',emoji:'🏥',ageRestriction:'18+',language:'Arabic, English',facilities:'',status:'confirmed',active:true,desc:'Essential first aid for newborns from certified pediatric nurses.'},
+  {id:4,title:'Newborn Photography Masterclass',date:'2026-07-21',dateEnd:'',time:'14:00',doorsOpen:'',venue:'Garden City Studio',venueAddress:'Garden City, Downtown Cairo',locCat:'Cairo',category:'Workshop',organizer:'Lens & Light Studio',priceMin:200,priceMax:200,priceDisplay:'EGP 200',ticketTiers:[{name:'General',price:200}],ticketUrl:'',imageUrl:'',emoji:'📸',ageRestriction:'All ages',language:'Arabic',facilities:'Parking',status:'confirmed',active:true,desc:'Professional newborn photography masterclass.'},
+  {id:5,title:'Breastfeeding Support Circle',date:'2026-07-24',dateEnd:'',time:'18:00',doorsOpen:'',venue:'Online · Google Meet',venueAddress:'Online',locCat:'Online',category:'Support Circle',organizer:'Mestahla Community',priceMin:0,priceMax:0,priceDisplay:'Free',ticketTiers:[{name:'Free',price:0}],ticketUrl:'',imageUrl:'',emoji:'💛',ageRestriction:'All',language:'Arabic',facilities:'',status:'confirmed',active:true,desc:'Safe space for breastfeeding support and expert advice.'},
+  {id:6,title:'Maternity Fashion Show',date:'2026-07-26',dateEnd:'',time:'15:00',doorsOpen:'14:30',venue:'Conrad Hotel',venueAddress:'Conrad Hotel, Corniche El Nil, Cairo',locCat:'Cairo',category:'Show',organizer:'Mama Style EG',priceMin:0,priceMax:0,priceDisplay:'Free',ticketTiers:[{name:'General Admission',price:0}],ticketUrl:'',imageUrl:'',emoji:'👗',ageRestriction:'All ages',language:'Arabic, English',facilities:'Parking, Valet, Food & Beverages',status:'confirmed',active:true,desc:'Latest maternity fashion trends with Egyptian and international designers.'},
 ];
 let offers=[
   {id:1,brand:'Mothercare Egypt',title:'30% Off Strollers',title_ar:'خصم 30% على العربيات',discount:'30% OFF',channel:'In-store',locked:false,cat:'Baby Gear',active:true},
@@ -415,7 +416,7 @@ function renderDashboard(){
       <div class="tbl-wrap"><table><thead><tr><th>Title</th><th>Date</th><th>Location</th><th>Status</th></tr></thead>
       <tbody>${events.slice(0,4).map(e=>`<tr>
         <td class="cell-bold">${e.title}</td>
-        <td>${e.date}</td><td>${e.location}</td>
+        <td>${e.date}</td><td>${e.venue||e.location||""}</td>
         <td><span class="pill ${e.status}">${e.status}</span></td>
       </tr>`).join('')}</tbody></table></div>
     </div>`;
@@ -445,18 +446,22 @@ function renderEvents(){
         </div>
       </div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th></th><th>Title</th><th>Date</th><th>Location</th><th>Price</th><th>Status</th><th>Active</th><th>Actions</th></tr></thead>
+        <thead><tr><th></th><th>Title</th><th>Date</th><th>Time</th><th>Venue</th><th>Category</th><th>Price</th><th>Status</th><th>Active</th><th>Actions</th></tr></thead>
         <tbody id="events-tbody">${events.map(eventRow).join('')}</tbody>
       </table></div>
     </div>`;
 }
 function eventRow(e){
+  const pr=e.priceDisplay||(e.priceMin===0?'Free':(e.priceMax>e.priceMin?`EGP ${e.priceMin}–${e.priceMax}`:`EGP ${e.priceMin}`));
   return `<tr id="event-row-${e.id}">
-    <td><div class="cell-img">📅</div></td>
+    <td><div class="cell-img">${e.imageUrl?`<img src="${e.imageUrl}" style="width:46px;height:38px;object-fit:cover;border-radius:6px" alt="">`:e.emoji||'📅'}</div></td>
     <td class="cell-bold" data-event="${e.title.toLowerCase()}">${e.title}</td>
-    <td>${e.date}</td><td>${e.location}</td>
-    <td>${e.price===0?'Free':'EGP '+e.price}</td>
-    <td><span class="pill ${e.status}">${e.status}</span></td>
+    <td>${e.date}${e.dateEnd?' – '+e.dateEnd:''}</td>
+    <td>${e.time||''}</td>
+    <td>${e.venue||e.location||''}</td>
+    <td><span class="pill" style="background:var(--brand-lt);color:var(--teal)">${e.category||'—'}</span></td>
+    <td>${pr}</td>
+    <td><span class="pill ${e.status}">${e.status.charAt(0).toUpperCase()+e.status.slice(1)}</span></td>
     <td><span class="pill ${e.active?'active':'inactive'}">${e.active?'Active':'Hidden'}</span></td>
     <td><div class="tbl-actions">
       <button class="tbl-btn edit" onclick="openEventModal(${e.id})">Edit</button>
@@ -467,34 +472,119 @@ function eventRow(e){
 function openEventModal(id){
   const e=id?events.find(x=>x.id===id):null;
   document.getElementById('modal-title').textContent=e?'Edit Event':'Add Event';
+  const tiers=e&&e.ticketTiers&&e.ticketTiers.length?e.ticketTiers:[{name:'General',price:0}];
+  const tiersHtml=tiers.map((t,i)=>`
+    <div class="form-row tier-row" id="tier-row-${i}" style="align-items:center;gap:8px">
+      <div class="form-group" style="flex:2"><input id="fe-tier-name-${i}" value="${t.name}" placeholder="Tier name (e.g. VIP, General)"></div>
+      <div class="form-group" style="flex:1"><input id="fe-tier-price-${i}" type="number" value="${t.price}" min="0" placeholder="0"></div>
+      <button type="button" onclick="removeTier(${i})" style="padding:0 10px;color:#991B1B;font-size:20px;line-height:1;background:none;border:none;cursor:pointer;flex-shrink:0">×</button>
+    </div>`).join('');
   document.getElementById('modal-body').innerHTML=`
-    <div class="form-group"><label class="form-label">Title (English)</label><input id="fe-title" value="${e?e.title:''}" placeholder="Event title"></div>
+    <div class="form-group"><label class="form-label">Event Title</label><input id="fe-title" value="${e?e.title:''}" placeholder="e.g. Cairo Baby Fair 2026"></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Date</label><input id="fe-date" type="date" value="${e?e.date:''}"></div>
-      <div class="form-group"><label class="form-label">Time</label><input id="fe-time" type="time" value="${e?e.time:'10:00'}"></div>
+      <div class="form-group"><label class="form-label">Start Date</label><input id="fe-date" type="date" value="${e?e.date:''}"></div>
+      <div class="form-group"><label class="form-label">End Date <span style="font-weight:400;color:var(--ink-3)">(multi-day)</span></label><input id="fe-dateend" type="date" value="${e?e.dateEnd||'':''}"></div>
     </div>
-    <div class="form-group"><label class="form-label">Location</label><input id="fe-location" value="${e?e.location:''}" placeholder="Venue or Online"></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Price (EGP, 0=Free)</label><input id="fe-price" type="number" value="${e?e.price:0}" min="0"></div>
-      <div class="form-group"><label class="form-label">Status</label>
-        <select id="fe-status">${['confirmed','waitlisted','free'].map(s=>`<option value="${s}" ${e&&e.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select>
+      <div class="form-group"><label class="form-label">Show Time</label><input id="fe-time" type="time" value="${e?e.time:'10:00'}"></div>
+      <div class="form-group"><label class="form-label">Doors Open</label><input id="fe-doors" type="time" value="${e?e.doorsOpen||'':''}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Venue Name</label><input id="fe-venue" value="${e?e.venue||e.location||'':''}" placeholder="e.g. Cairo Festival City Mall"></div>
+    <div class="form-group"><label class="form-label">Full Address</label><input id="fe-address" value="${e?e.venueAddress||'':''}" placeholder="Full address including area and city"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Location Area</label>
+        <select id="fe-loccat">${['Online','Cairo','New Cairo','Maadi','Sahel','Madinaty','6th October','Alexandria','Other'].map(l=>`<option${e&&e.locCat===l?' selected':''}>${l}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select id="fe-cat">${['Fair','Workshop','Masterclass','Support Circle','Show','Concert','Festival','Other'].map(c=>`<option${e&&e.category===c?' selected':''}>${c}</option>`).join('')}</select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Visibility</label>
-      <select id="fe-active"><option value="true" ${!e||e.active?'selected':''}>Active (visible)</option><option value="false" ${e&&!e.active?'selected':''}>Hidden</option></select>
-    </div>`;
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Organizer</label><input id="fe-org" value="${e?e.organizer||'':''}" placeholder="Organizer name"></div>
+      <div class="form-group"><label class="form-label">Emoji <span style="font-weight:400;color:var(--ink-3)">(image fallback)</span></label><input id="fe-emoji" value="${e?e.emoji||'📅':'📅'}" style="font-size:20px"></div>
+    </div>
+    <div style="margin-bottom:4px">
+      <label class="form-label">Ticket Tiers <span style="font-weight:400;color:var(--ink-3)">— name + price per tier (0 = Free)</span></label>
+    </div>
+    <div id="fe-tiers">${tiersHtml}</div>
+    <button type="button" onclick="addTier()" style="font-size:12px;color:var(--teal);font-weight:600;padding:4px 0;margin-bottom:12px;background:none;border:none;cursor:pointer">+ Add Tier</button>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Status</label>
+        <select id="fe-status">${['confirmed','waitlisted','sold-out'].map(s=>`<option value="${s}"${e&&e.status===s?' selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label class="form-label">Visibility</label>
+        <select id="fe-active">
+          <option value="true"${!e||e.active?' selected':''}>Active</option>
+          <option value="false"${e&&!e.active?' selected':''}>Hidden</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Image URL</label><input id="fe-img" value="${e?e.imageUrl||'':''}" placeholder="https://... (leave blank to use emoji)"></div>
+      <div class="form-group"><label class="form-label">Ticket Purchase URL</label><input id="fe-ticketurl" value="${e?e.ticketUrl||'':''}" placeholder="https://ticketsmarche.com/..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Age Restriction</label><input id="fe-age" value="${e?e.ageRestriction||'':''}" placeholder="e.g. All ages, 18+, Pregnant only"></div>
+      <div class="form-group"><label class="form-label">Language</label><input id="fe-lang" value="${e?e.language||'':''}" placeholder="Arabic, English"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Facilities <span style="font-weight:400;color:var(--ink-3)">(comma separated)</span></label><input id="fe-facilities" value="${e?e.facilities||'':''}" placeholder="Parking, Food & Beverages, Stroller Access"></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea id="fe-desc" rows="3" placeholder="Event description...">${e?e.desc||'':''}</textarea></div>`;
   document.getElementById('modal-save-btn').onclick=()=>saveEvent(id);
   document.getElementById('modal').classList.remove('hidden');
 }
+function addTier(){
+  const c=document.getElementById('fe-tiers'); const i=c.children.length;
+  const d=document.createElement('div');
+  d.className='form-row tier-row'; d.id=`tier-row-${i}`; d.style.cssText='align-items:center;gap:8px';
+  d.innerHTML=`<div class="form-group" style="flex:2"><input id="fe-tier-name-${i}" placeholder="Tier name (e.g. VIP, General)"></div><div class="form-group" style="flex:1"><input id="fe-tier-price-${i}" type="number" value="0" min="0" placeholder="0"></div><button type="button" onclick="removeTier(${i})" style="padding:0 10px;color:#991B1B;font-size:20px;line-height:1;background:none;border:none;cursor:pointer;flex-shrink:0">×</button>`;
+  c.appendChild(d);
+}
+function removeTier(i){
+  const el=document.getElementById(`tier-row-${i}`);
+  if(el && document.getElementById('fe-tiers').children.length>1) el.remove();
+}
 function saveEvent(id){
+  const tc=document.getElementById('fe-tiers');
+  const tiers=[];
+  Array.from(tc.children).forEach((row,i)=>{
+    const nm=document.getElementById(`fe-tier-name-${i}`);
+    const pr=document.getElementById(`fe-tier-price-${i}`);
+    if(nm&&nm.value) tiers.push({name:nm.value,price:parseInt(pr?.value||'0')});
+  });
+  if(!tiers.length) tiers.push({name:'General',price:0});
+  const priceMin=Math.min(...tiers.map(t=>t.price));
+  const priceMax=Math.max(...tiers.map(t=>t.price));
+  const startDate=document.getElementById('fe-date').value||'';
+  let dateDisplay='';
+  if(startDate){try{dateDisplay=new Date(startDate+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}catch(e){dateDisplay=startDate;}}
+  const rawTime=document.getElementById('fe-time').value||'';
+  let timeDisplay='';
+  if(rawTime){try{timeDisplay=new Date('2000-01-01T'+rawTime).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});}catch(e){timeDisplay=rawTime;}}
   const d={
     title:document.getElementById('fe-title').value||'Untitled Event',
-    date:document.getElementById('fe-date').value,
-    time:document.getElementById('fe-time').value,
-    location:document.getElementById('fe-location').value,
-    price:parseInt(document.getElementById('fe-price').value)||0,
+    date:startDate,
+    dateEnd:document.getElementById('fe-dateend').value||'',
+    dateDisplay,
+    time:rawTime,
+    timeDisplay,
+    doorsOpen:document.getElementById('fe-doors').value||'',
+    venue:document.getElementById('fe-venue').value||'',
+    venueAddress:document.getElementById('fe-address').value||'',
+    locCat:document.getElementById('fe-loccat').value,
+    category:document.getElementById('fe-cat').value,
+    organizer:document.getElementById('fe-org').value||'',
+    priceMin,priceMax,
+    priceDisplay:priceMin===0?'Free':(priceMax>priceMin?`EGP ${priceMin}–${priceMax}`:`EGP ${priceMin}`),
+    ticketTiers:tiers,
+    ticketUrl:document.getElementById('fe-ticketurl').value||'',
+    imageUrl:document.getElementById('fe-img').value||'',
+    emoji:document.getElementById('fe-emoji').value||'📅',
+    ageRestriction:document.getElementById('fe-age').value||'',
+    language:document.getElementById('fe-lang').value||'',
+    facilities:document.getElementById('fe-facilities').value||'',
     status:document.getElementById('fe-status').value,
     active:document.getElementById('fe-active').value==='true',
+    desc:document.getElementById('fe-desc').value||'',
   };
   if(id){const i=events.findIndex(e=>e.id===id);if(i>=0)events[i]={...events[i],...d};showToast('Event updated ✓');}
   else{events.push({id:++nextId,...d});showToast('Event added ✓');}
