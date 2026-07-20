@@ -1,0 +1,775 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mestahla Admin</title>
+<style>
+:root{
+  /* Official Mestahla Carnival Brand Palette */
+  --teal:#315B54;--forest:#18312D;
+  --coral:#F47C6C;--coral-dk:#E0604F;
+  --yellow:#F6C84C;--yellow-lt:#FEF6DC;
+  --sky:#78C9D4;--sky-lt:#E3F5F8;
+  --cream:#FFF7E8;
+  --purple:#9B86D9;--purple-lt:#EDE9F8;--purple-dk:#7A68C4;
+  --amber:#F6C84C;--amber-lt:#FEF6DC;
+  /* Semantic aliases */
+  --brand:var(--teal);--brand-dk:var(--forest);
+  --brand-lt:#E4EDEB;--brand-xlt:#F0F5F4;
+  --ink:#26312F;--ink-2:#4A6B63;--ink-3:#8AADA6;
+  --card:#fff;--bg:var(--cream);--border:#D5E3E0;--sidebar-bg:var(--forest);
+  --shadow:0 2px 12px rgba(24,49,45,.08);--shadow-lg:0 8px 40px rgba(24,49,45,.16);
+  --radius:14px;--radius-sm:9px;
+  --font:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+}
+:root[data-theme="dark"]{
+  --bg:#0E1E1B;--card:#162620;--sidebar-bg:#0A1713;--border:#1E3830;
+  --ink:#D8EDE8;--ink-2:#6B9E95;--ink-3:#3D706A;
+  --brand-lt:#1A3530;--brand-xlt:#122820;
+  --shadow:0 2px 16px rgba(0,0,0,.4);--shadow-lg:0 8px 40px rgba(0,0,0,.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;width:100%;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+input::placeholder{color:var(--ink-3)}
+
+/* ── LOGIN SCREEN ─────────────────────────────────────────── */
+#login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--forest);z-index:200;padding:20px}
+#login-screen.hidden{display:none}
+.login-card{background:var(--card);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:24px;align-items:center;border-top:4px solid var(--teal)}
+.login-logo{width:220px}
+.login-title{font-size:20px;font-weight:800;color:var(--ink);font-family:var(--serif);text-align:center}
+.login-sub{font-size:13px;color:var(--ink-3);margin-top:-16px;text-align:center}
+.login-fields{display:flex;flex-direction:column;gap:14px;width:100%}
+.login-label{font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block}
+.login-input-wrap{position:relative}
+.login-input-wrap input{padding-left:44px;font-size:15px}
+.login-input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
+.login-btn{width:100%;padding:15px;background:var(--coral);color:#fff;border-radius:12px;font-size:16px;font-weight:700;transition:background .15s}
+.login-btn:hover{background:var(--coral-dk)}
+.login-error{background:#FEE2E2;border:1.5px solid #FECACA;border-radius:9px;padding:12px 16px;color:#991B1B;font-size:13px;font-weight:500;text-align:center;display:none}
+.login-error.visible{display:block}
+.login-attempts{font-size:11px;color:var(--ink-3);text-align:center;margin-top:-10px}
+
+/* ── ADMIN SHELL ─────────────────────────────────────────── */
+#admin-shell{display:flex;height:100vh;overflow:hidden}
+.admin-sidebar{width:220px;min-width:220px;background:var(--sidebar-bg);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:0 0 16px}
+.sb-head{padding:20px 18px;border-bottom:1.5px solid rgba(255,255,255,.08)}
+.sb-logo{display:block;width:160px;margin-bottom:6px}
+.sb-role{font-size:10px;color:var(--sky);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.sb-nav{flex:1;padding:10px 10px;overflow-y:auto}
+.nav-section{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.35);padding:14px 10px 5px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--radius-sm);color:rgba(255,255,255,.65);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.95)}
+.nav-item.active{background:var(--coral);color:#fff}
+.nav-item .ni{font-size:17px;width:20px;text-align:center}
+.sb-foot{padding:0 10px}
+.admin-user-row{display:flex;align-items:center;gap:10px;padding:12px 10px 0;border-top:1.5px solid rgba(255,255,255,.08)}
+.admin-av{width:34px;height:34px;border-radius:50%;background:var(--coral);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.admin-user-info{flex:1;min-width:0}
+.admin-user-name{font-size:12px;font-weight:700;color:rgba(255,255,255,.9)}
+.admin-user-role{font-size:10px;color:var(--sky)}
+.logout-btn{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:all .15s}
+.logout-btn:hover{background:var(--coral);color:#fff}
+
+/* ── MAIN AREA ───────────────────────────────────────────── */
+.admin-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.admin-topbar{background:var(--sidebar-bg);border-bottom:1.5px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.admin-topbar-title{font-size:18px;font-weight:800;color:var(--ink);font-family:var(--serif)}
+.admin-topbar-actions{display:flex;gap:10px;align-items:center}
+.icon-btn{width:36px;height:36px;border-radius:50%;background:var(--brand-lt);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .15s}
+.icon-btn:hover{background:var(--brand);color:#fff}
+.admin-content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:24px}
+
+/* ── STATS GRID ──────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-left:4px solid var(--brand)}
+.stat-value{font-size:28px;font-weight:800;color:var(--brand);font-variant-numeric:tabular-nums}
+.stat-label{font-size:11px;color:var(--ink-3);margin-top:2px}
+.stat-trend{font-size:11px;color:#16A34A;margin-top:6px;font-weight:600}
+
+/* ── TABLE ───────────────────────────────────────────────── */
+.table-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid var(--border);gap:12px;flex-wrap:wrap}
+.table-title{font-size:15px;font-weight:700;color:var(--ink)}
+.table-toolbar-right{display:flex;gap:10px;align-items:center}
+.search-input{padding:9px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg);font-size:13px;width:200px}
+.add-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--brand);color:#fff;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s}
+.add-btn:hover{background:var(--brand-dk)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:500px}
+th{text-align:left;padding:11px 16px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-3);background:var(--brand-xlt);border-bottom:1.5px solid var(--border);font-weight:700}
+td{padding:12px 16px;font-size:13px;color:var(--ink-2);border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--brand-xlt)}
+.cell-img{width:46px;height:38px;border-radius:8px;background:var(--brand-lt);display:flex;align-items:center;justify-content:center;font-size:18px}
+.cell-bold{font-weight:700;color:var(--ink)}
+.pill{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.2px}
+.pill.active,.pill.published,.pill.free{background:#DCFCE7;color:#166534}
+.pill.inactive,.pill.draft{background:#FEE2E2;color:#991B1B}
+.pill.locked,.pill.waitlisted{background:var(--amber-lt);color:#92400E}
+.pill.confirmed{background:var(--brand-lt);color:var(--brand)}
+.pill.featured{background:#EDE9FE;color:#5B21B6}
+.tbl-actions{display:flex;gap:6px}
+.tbl-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tbl-btn.edit{background:var(--brand-lt);color:var(--brand)}
+.tbl-btn.edit:hover{background:var(--brand);color:#fff}
+.tbl-btn.del{background:#FEE2E2;color:#991B1B}
+.tbl-btn.del:hover{background:#991B1B;color:#fff}
+.tbl-btn.toggle{background:var(--amber-lt);color:#92400E}
+.tbl-btn.toggle:hover{background:var(--amber);color:#fff}
+.empty-state{text-align:center;padding:40px;color:var(--ink-3)}
+.empty-state div:first-child{font-size:36px;margin-bottom:10px}
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s ease}
+.backdrop.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--card);border-radius:18px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1.5px solid var(--border)}
+.modal-title{font-size:16px;font-weight:800;color:var(--ink);font-family:var(--serif)}
+.modal-close{width:30px;height:30px;border-radius:50%;background:var(--brand-lt);color:var(--ink-2);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .15s}
+.modal-close:hover{background:var(--brand);color:#fff}
+.modal-body{padding:24px;display:flex;flex-direction:column;gap:15px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px}
+.modal-foot{padding:16px 24px;border-top:1.5px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.btn-cancel{padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--ink-2);background:var(--brand-lt);cursor:pointer;transition:background .15s}
+.btn-cancel:hover{background:var(--border)}
+.btn-save{padding:10px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:#fff;background:var(--brand);cursor:pointer;transition:background .15s}
+.btn-save:hover{background:var(--brand-dk)}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brand);color:#fff;padding:12px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;z-index:500;box-shadow:var(--shadow-lg);animation:toastIn .25s ease;white-space:nowrap}
+.toast.hidden{display:none}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── CHARTS (CSS sparklines) ─────────────────────────────── */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chart-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.chart-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:14px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px}
+.bar{flex:1;background:var(--brand);border-radius:4px 4px 0 0;opacity:.85;min-height:4px;transition:opacity .15s;position:relative}
+.bar:hover{opacity:1}
+.bar-labels{display:flex;gap:6px;margin-top:6px}
+.bar-label{flex:1;font-size:10px;color:var(--ink-3);text-align:center}
+
+/* ── MOBILE SIDEBAR TOGGLE ───────────────────────────────── */
+@media(max-width:768px){
+  .admin-sidebar{display:none;position:fixed;inset:0 auto 0 0;z-index:100;width:200px}
+  .admin-sidebar.open{display:flex}
+  .menu-btn{display:flex}
+}
+.menu-btn{display:none;width:36px;height:36px;border-radius:50%;background:var(--brand-lt);align-items:center;justify-content:center;font-size:18px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="toast hidden" id="toast"></div>
+
+<!-- ── MODAL ─────────────────────────────────────────────── -->
+<div class="backdrop hidden" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-title">Add Item</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="modal-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOGIN ─────────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-card">
+    <img class="logo-teal login-logo" style="width:220px;display:block" alt="Mestahla">
+    <div>
+      <div class="login-title">Admin Portal</div>
+      <div class="login-sub">Sign in to manage Mestahla content</div>
+    </div>
+    <div class="login-error" id="login-error">❌ Incorrect username or password. Please try again.</div>
+    <div class="login-fields">
+      <div>
+        <label class="login-label">Username</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">👤</span>
+          <input type="text" id="login-username" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+      </div>
+      <div>
+        <label class="login-label">Password</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">🔒</span>
+          <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+      </div>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-attempts" id="login-attempts-left"></div>
+  </div>
+</div>
+
+<!-- ── ADMIN SHELL ─────────────────────────────────────────── -->
+<div id="admin-shell">
+  <nav class="admin-sidebar" id="sidebar">
+    <div class="sb-head">
+      <img class="logo-white sb-logo" style="width:160px;display:block" alt="Mestahla">
+      <div class="sb-role">Admin Panel</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" data-section="dashboard" onclick="goSection('dashboard')"><span class="ni">📊</span>Dashboard</div>
+      <div class="nav-section">Content</div>
+      <div class="nav-item" data-section="events" onclick="goSection('events')"><span class="ni">📅</span>Events</div>
+      <div class="nav-item" data-section="offers" onclick="goSection('offers')"><span class="ni">🏷</span>Offers</div>
+      <div class="nav-item" data-section="articles" onclick="goSection('articles')"><span class="ni">📰</span>Articles</div>
+      <div class="nav-section">Partners</div>
+      <div class="nav-item" data-section="brands" onclick="goSection('brands')"><span class="ni">🏢</span>Brands</div>
+      <div class="nav-item" data-section="malls" onclick="goSection('malls')"><span class="ni">🏬</span>Malls</div>
+      <div class="nav-section">Users</div>
+      <div class="nav-item" data-section="users" onclick="goSection('users')"><span class="ni">👥</span>Users</div>
+    </div>
+    <div class="sb-foot">
+      <div class="admin-user-row">
+        <div class="admin-av">M</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name">Michael</div>
+          <div class="admin-user-role">Super Admin</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Sign out">⏏</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="admin-topbar-title" id="topbar-title">Dashboard</div>
+      </div>
+      <div class="admin-topbar-actions">
+        <button class="icon-btn" onclick="toggleTheme()">🌙</button>
+        <button class="icon-btn" title="Notifications">🔔</button>
+      </div>
+    </div>
+    <div class="admin-content" id="admin-content"></div>
+  </div>
+</div>
+
+<script>
+/* ── AUTH ─────────────────────────────────────────────────── */
+const ADMIN_USER = 'Michael', ADMIN_PASS = 'Mestahla123';
+let loginAttempts = 0;
+
+function doLogin(){
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  const attEl = document.getElementById('login-attempts-left');
+  if(u === ADMIN_USER && p === ADMIN_PASS){
+    document.getElementById('login-screen').classList.add('hidden');
+    showToast('Welcome back, Michael! 👋');
+    renderSection('dashboard');
+  } else {
+    loginAttempts++;
+    err.classList.add('visible');
+    err.textContent = loginAttempts>=3 ? `❌ ${5-loginAttempts} attempts remaining before lockout.` : '❌ Incorrect username or password.';
+    attEl.textContent = `Attempt ${loginAttempts} of 5`;
+    if(loginAttempts>=5){
+      document.getElementById('login-username').disabled=true;
+      document.getElementById('login-password').disabled=true;
+      document.querySelector('.login-btn').disabled=true;
+      err.textContent='🔒 Account locked. Contact your system administrator.';
+    }
+    document.getElementById('login-password').value='';
+    document.getElementById('login-password').focus();
+  }
+}
+function doLogout(){
+  if(confirm('Sign out of the admin panel?')){
+    document.getElementById('login-screen').classList.remove('hidden');
+    loginAttempts=0;
+    document.getElementById('login-username').value='';
+    document.getElementById('login-password').value='';
+    document.getElementById('login-error').classList.remove('visible');
+    document.getElementById('login-attempts-left').textContent='';
+    document.getElementById('login-username').disabled=false;
+    document.getElementById('login-password').disabled=false;
+    document.querySelector('.login-btn').disabled=false;
+  }
+}
+function toggleTheme(){
+  document.documentElement.dataset.theme = document.documentElement.dataset.theme==='dark'?'light':'dark';
+}
+
+/* ── DATA ─────────────────────────────────────────────────── */
+let events=[
+  {id:1,title:'Cairo Bump & Baby Fair 2025',date:'2025-07-12',time:'10:00',location:'Cairo Festival City Mall',price:0,status:'confirmed',active:true},
+  {id:2,title:'Prenatal Yoga Workshop',date:'2025-07-16',time:'17:00',location:'Maadi Sporting Club',price:150,status:'waitlisted',active:true},
+  {id:3,title:'Baby First Aid Masterclass',date:'2025-07-18',time:'11:00',location:'Online · Zoom',price:0,status:'confirmed',active:true},
+  {id:4,title:'Newborn Photography Workshop',date:'2025-07-21',time:'14:00',location:'Garden City, Cairo',price:200,status:'free',active:true},
+  {id:5,title:'Breastfeeding Support Circle',date:'2025-07-24',time:'18:00',location:'Online · Google Meet',price:0,status:'free',active:false},
+];
+let offers=[
+  {id:1,brand:'Mothercare Egypt',title:'30% Off Strollers',title_ar:'خصم 30% على العربيات',discount:'30% OFF',channel:'In-store',locked:false,cat:'Baby Gear',active:true},
+  {id:2,brand:'Mothercare Egypt',title:'Free Gift with EGP 500+',title_ar:'هدية مجانية مع 500 جنيه+',discount:'FREE GIFT',channel:'In-store',locked:true,cat:'Baby Gear',active:true},
+  {id:3,brand:'Babyshop',title:'25% Off Baby Clothing',title_ar:'خصم 25% ملابس أطفال',discount:'25% OFF',channel:'Both',locked:false,cat:'Baby Gear',active:true},
+  {id:4,brand:'H&M Mama',title:'Summer Maternity Edit',title_ar:'تشكيلة أمومة صيف',discount:'20% OFF',channel:'Both',locked:false,cat:'Fashion',active:true},
+  {id:5,brand:'Clarins',title:'Anti-Stretch Mark Cream',title_ar:'كريم الوقاية من التمدد',discount:'15% OFF',channel:'Online',locked:true,cat:'Beauty',active:true},
+  {id:6,brand:'NUK Egypt',title:'Newborn Feeding Kit',title_ar:'طقم رضاعة مواليد',discount:'35% OFF',channel:'Both',locked:false,cat:'Baby Gear',active:true},
+  {id:7,brand:'Chicco',title:'40% Off Car Seat',title_ar:'خصم 40% كرسي سيارة',discount:'40% OFF',channel:'In-store',locked:true,cat:'Baby Gear',active:false},
+  {id:8,brand:'Medela',title:'Breast Pump Special',title_ar:'عرض شفاطة الحليب',discount:'EXCLUSIVE',channel:'Online',locked:true,cat:'Nutrition',active:true},
+];
+let articles=[
+  {id:1,title:'What to Expect at Week 24',title_ar:'ماذا تتوقعين في الأسبوع 24',stage:'pregnant',published:true},
+  {id:2,title:'Iron-Rich Foods During Pregnancy',title_ar:'الأطعمة الغنية بالحديد',stage:'pregnant',published:true},
+  {id:3,title:'Setting Up Your Nursery on a Budget',title_ar:'ترتيب غرفة الطفل باقتصاد',stage:'pregnant',published:true},
+  {id:4,title:'Understanding Fetal Movement Patterns',title_ar:'تحركات الجنين',stage:'pregnant',published:false},
+  {id:5,title:'Kegel Exercises: Why They Matter',title_ar:'تمارين كيجل وأهميتها',stage:'new_mom',published:true},
+  {id:6,title:'Better Sleep During Pregnancy',title_ar:'نوم أفضل أثناء الحمل',stage:'pregnant',published:true},
+];
+let brands=[
+  {id:1,name:'Mothercare Egypt',featured:true,active:true},
+  {id:2,name:'Babyshop',featured:true,active:true},
+  {id:3,name:'H&M Mama',featured:true,active:true},
+  {id:4,name:'Clarins',featured:true,active:true},
+  {id:5,name:'NUK Egypt',featured:false,active:true},
+  {id:6,name:'Chicco',featured:false,active:true},
+  {id:7,name:'Medela',featured:false,active:true},
+  {id:8,name:'Petit Bateau',featured:false,active:false},
+];
+let mallsData=[
+  {id:1,name:'Cairo Festival City',location:'New Cairo',active:true},
+  {id:2,name:'Mall of Arabia',location:'6th of October',active:true},
+  {id:3,name:'City Centre Almaza',location:'Heliopolis',active:true},
+  {id:4,name:'Point 90 Mall',location:'New Cairo',active:true},
+  {id:5,name:'Dandy Mega Mall',location:'Sheikh Zayed',active:false},
+];
+let users=[
+  {id:1,name:'Sara Ahmed',email:'sara@example.com',stage:'Pregnant',week:24,status:'active',joined:'Jun 2025',sub:'free'},
+  {id:2,name:'Nour Mohamed',email:'nour@example.com',stage:'Pregnant',week:28,status:'active',joined:'May 2025',sub:'pro'},
+  {id:3,name:'Heba Khalil',email:'heba@example.com',stage:'New Mom',week:'Month 3',status:'active',joined:'Mar 2025',sub:'pro'},
+  {id:4,name:'Mona Hassan',email:'mona@example.com',stage:'Pregnant',week:16,status:'active',joined:'Jul 2025',sub:'free'},
+  {id:5,name:'Laila Nasser',email:'laila@example.com',stage:'Trying',week:'—',status:'inactive',joined:'Jun 2025',sub:'free'},
+];
+let nextId = 100;
+
+/* ── NAVIGATION ──────────────────────────────────────────── */
+const titles={dashboard:'Dashboard',events:'Events',offers:'Offers',articles:'Articles',brands:'Brands',malls:'Malls',users:'Users'};
+function goSection(s){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.section===s));
+  document.getElementById('topbar-title').textContent=titles[s]||s;
+  document.getElementById('sidebar').classList.remove('open');
+  renderSection(s);
+}
+function renderSection(s){
+  const renders={dashboard:renderDashboard,events:renderEvents,offers:renderOffers,articles:renderArticles,brands:renderBrands,malls:renderMalls,users:renderUsers};
+  (renders[s]||renderDashboard)();
+}
+
+/* ── DASHBOARD ───────────────────────────────────────────── */
+function renderDashboard(){
+  const el=document.getElementById('admin-content');
+  el.innerHTML=`
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">${events.filter(e=>e.active).length}</div><div class="stat-label">Active Events</div><div class="stat-trend">↑ 2 new this week</div></div>
+      <div class="stat-card"><div class="stat-value">${offers.filter(o=>o.active).length}</div><div class="stat-label">Active Offers</div><div class="stat-trend">↑ 3 new brands</div></div>
+      <div class="stat-card"><div class="stat-value">${articles.filter(a=>a.published).length}</div><div class="stat-label">Published Articles</div><div class="stat-trend">↑ 1 draft pending</div></div>
+      <div class="stat-card"><div class="stat-value">${users.length}</div><div class="stat-label">Registered Users</div><div class="stat-trend">↑ Growing daily</div></div>
+      <div class="stat-card"><div class="stat-value">${brands.filter(b=>b.featured).length}</div><div class="stat-label">Featured Brands</div><div class="stat-trend">of ${brands.length} total</div></div>
+      <div class="stat-card"><div class="stat-value">${users.filter(u=>u.sub==='pro').length}</div><div class="stat-label">Pro Subscribers</div><div class="stat-trend">↑ Growing</div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">Weekly Registrations</div>
+        <div class="bar-chart" id="reg-bars"></div>
+        <div class="bar-labels"><div class="bar-label">Mon</div><div class="bar-label">Tue</div><div class="bar-label">Wed</div><div class="bar-label">Thu</div><div class="bar-label">Fri</div><div class="bar-label">Sat</div><div class="bar-label">Sun</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Offer Unlocks</div>
+        <div class="bar-chart" id="unlock-bars"></div>
+        <div class="bar-labels"><div class="bar-label">Mon</div><div class="bar-label">Tue</div><div class="bar-label">Wed</div><div class="bar-label">Thu</div><div class="bar-label">Fri</div><div class="bar-label">Sat</div><div class="bar-label">Sun</div></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-toolbar"><span class="table-title">Recent Events</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Title</th><th>Date</th><th>Location</th><th>Status</th></tr></thead>
+      <tbody>${events.slice(0,4).map(e=>`<tr>
+        <td class="cell-bold">${e.title}</td>
+        <td>${e.date}</td><td>${e.location}</td>
+        <td><span class="pill ${e.status}">${e.status}</span></td>
+      </tr>`).join('')}</tbody></table></div>
+    </div>`;
+  // draw bars
+  const regData=[8,12,6,19,14,22,9];
+  const unlockData=[15,8,22,18,12,30,16];
+  const drawBars=(id,data)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const max=Math.max(...data);
+    el.innerHTML=data.map(v=>`<div class="bar" style="height:${Math.max(6,(v/max)*80)}px" title="${v}"></div>`).join('');
+  };
+  drawBars('reg-bars',regData);
+  drawBars('unlock-bars',unlockData);
+}
+
+/* ── EVENTS SECTION ──────────────────────────────────────── */
+function renderEvents(){
+  const el=document.getElementById('admin-content');
+  el.innerHTML=`
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="table-title">All Events (${events.length})</span>
+        <div class="table-toolbar-right">
+          <input class="search-input" placeholder="🔍  Search events..." oninput="filterTable(this,'events-tbody','event')">
+          <button class="add-btn" onclick="openEventModal()">+ Add Event</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>Title</th><th>Date</th><th>Location</th><th>Price</th><th>Status</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="events-tbody">${events.map(eventRow).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+function eventRow(e){
+  return `<tr id="event-row-${e.id}">
+    <td><div class="cell-img">📅</div></td>
+    <td class="cell-bold" data-event="${e.title.toLowerCase()}">${e.title}</td>
+    <td>${e.date}</td><td>${e.location}</td>
+    <td>${e.price===0?'Free':'EGP '+e.price}</td>
+    <td><span class="pill ${e.status}">${e.status}</span></td>
+    <td><span class="pill ${e.active?'active':'inactive'}">${e.active?'Active':'Hidden'}</span></td>
+    <td><div class="tbl-actions">
+      <button class="tbl-btn edit" onclick="openEventModal(${e.id})">Edit</button>
+      <button class="tbl-btn del" onclick="deleteItem('events',${e.id})">Delete</button>
+    </div></td>
+  </tr>`;
+}
+function openEventModal(id){
+  const e=id?events.find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=e?'Edit Event':'Add Event';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Title (English)</label><input id="fe-title" value="${e?e.title:''}" placeholder="Event title"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Date</label><input id="fe-date" type="date" value="${e?e.date:''}"></div>
+      <div class="form-group"><label class="form-label">Time</label><input id="fe-time" type="time" value="${e?e.time:'10:00'}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Location</label><input id="fe-location" value="${e?e.location:''}" placeholder="Venue or Online"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Price (EGP, 0=Free)</label><input id="fe-price" type="number" value="${e?e.price:0}" min="0"></div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select id="fe-status">${['confirmed','waitlisted','free'].map(s=>`<option value="${s}" ${e&&e.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Visibility</label>
+      <select id="fe-active"><option value="true" ${!e||e.active?'selected':''}>Active (visible)</option><option value="false" ${e&&!e.active?'selected':''}>Hidden</option></select>
+    </div>`;
+  document.getElementById('modal-save-btn').onclick=()=>saveEvent(id);
+  document.getElementById('modal').classList.remove('hidden');
+}
+function saveEvent(id){
+  const d={
+    title:document.getElementById('fe-title').value||'Untitled Event',
+    date:document.getElementById('fe-date').value,
+    time:document.getElementById('fe-time').value,
+    location:document.getElementById('fe-location').value,
+    price:parseInt(document.getElementById('fe-price').value)||0,
+    status:document.getElementById('fe-status').value,
+    active:document.getElementById('fe-active').value==='true',
+  };
+  if(id){const i=events.findIndex(e=>e.id===id);if(i>=0)events[i]={...events[i],...d};showToast('Event updated ✓');}
+  else{events.push({id:++nextId,...d});showToast('Event added ✓');}
+  closeModal(); renderEvents();
+}
+function deleteItem(type,id){
+  if(!confirm('Delete this item?')) return;
+  const map={events,offers,articles,brands,malls:mallsData,users};
+  const arr=map[type]; const i=arr.findIndex(x=>x.id===id);
+  if(i>=0){arr.splice(i,1);showToast('Deleted ✓');}
+  const renders={events:renderEvents,offers:renderOffers,articles:renderArticles,brands:renderBrands,malls:renderMalls,users:renderUsers};
+  (renders[type]||renderDashboard)();
+}
+
+/* ── OFFERS SECTION ──────────────────────────────────────── */
+function renderOffers(){
+  const el=document.getElementById('admin-content');
+  el.innerHTML=`
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="table-title">All Offers (${offers.length})</span>
+        <div class="table-toolbar-right">
+          <input class="search-input" placeholder="🔍  Search..." oninput="filterTable(this,'offers-tbody','offer')">
+          <button class="add-btn" onclick="openOfferModal()">+ Add Offer</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>Title</th><th>Brand</th><th>Discount</th><th>Channel</th><th>Lock</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="offers-tbody">${offers.map(offerRow).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+function offerRow(o){
+  return `<tr id="offer-row-${o.id}">
+    <td><div class="cell-img">🏷</div></td>
+    <td class="cell-bold" data-offer="${o.title.toLowerCase()}">${o.title}<br><span style="font-size:11px;color:var(--ink-3)">${o.title_ar}</span></td>
+    <td>${o.brand}</td><td><strong>${o.discount}</strong></td><td>${o.channel}</td>
+    <td><span class="pill ${o.locked?'locked':'free'}">${o.locked?'🔒 Locked':'🔓 Free'}</span></td>
+    <td><span class="pill ${o.active?'active':'inactive'}">${o.active?'Active':'Hidden'}</span></td>
+    <td><div class="tbl-actions">
+      <button class="tbl-btn edit" onclick="openOfferModal(${o.id})">Edit</button>
+      <button class="tbl-btn del" onclick="deleteItem('offers',${o.id})">Delete</button>
+    </div></td>
+  </tr>`;
+}
+function openOfferModal(id){
+  const o=id?offers.find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=o?'Edit Offer':'Add Offer';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Title (English)</label><input id="fo-title" value="${o?o.title:''}" placeholder="Offer title"></div>
+    <div class="form-group"><label class="form-label">Title (Arabic)</label><input id="fo-title-ar" value="${o?o.title_ar:''}" placeholder="عنوان العرض" dir="rtl"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Brand</label><input id="fo-brand" value="${o?o.brand:''}" placeholder="Brand name"></div>
+      <div class="form-group"><label class="form-label">Discount Text</label><input id="fo-discount" value="${o?o.discount:''}" placeholder="30% OFF"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Channel</label>
+        <select id="fo-channel"><option ${o&&o.channel==='In-store'?'selected':''}>In-store</option><option ${o&&o.channel==='Online'?'selected':''}>Online</option><option ${o&&o.channel==='Both'?'selected':''}>Both</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select id="fo-cat">${['Baby Gear','Fashion','Beauty','Nutrition','Learning'].map(c=>`<option ${o&&o.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Locked (Pro only)</label>
+        <select id="fo-locked"><option value="false" ${o&&!o.locked?'selected':''}>🔓 Free</option><option value="true" ${o&&o.locked?'selected':''}>🔒 Pro only</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select id="fo-active"><option value="true" ${!o||o.active?'selected':''}>Active</option><option value="false" ${o&&!o.active?'selected':''}>Hidden</option></select>
+      </div>
+    </div>`;
+  document.getElementById('modal-save-btn').onclick=()=>saveOffer(id);
+  document.getElementById('modal').classList.remove('hidden');
+}
+function saveOffer(id){
+  const d={
+    title:document.getElementById('fo-title').value,
+    title_ar:document.getElementById('fo-title-ar').value,
+    brand:document.getElementById('fo-brand').value,
+    discount:document.getElementById('fo-discount').value,
+    channel:document.getElementById('fo-channel').value,
+    cat:document.getElementById('fo-cat').value,
+    locked:document.getElementById('fo-locked').value==='true',
+    active:document.getElementById('fo-active').value==='true',
+  };
+  if(id){const i=offers.findIndex(o=>o.id===id);if(i>=0)offers[i]={...offers[i],...d};showToast('Offer updated ✓');}
+  else{offers.push({id:++nextId,...d});showToast('Offer added ✓');}
+  closeModal(); renderOffers();
+}
+
+/* ── ARTICLES SECTION ────────────────────────────────────── */
+function renderArticles(){
+  const el=document.getElementById('admin-content');
+  el.innerHTML=`
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="table-title">Articles (${articles.length})</span>
+        <div class="table-toolbar-right">
+          <input class="search-input" placeholder="🔍  Search...">
+          <button class="add-btn" onclick="openArticleModal()">+ Add Article</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>Title (EN)</th><th>Title (AR)</th><th>Stage</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>${articles.map(a=>`<tr id="article-row-${a.id}">
+          <td><div class="cell-img">📰</div></td>
+          <td class="cell-bold">${a.title}</td>
+          <td style="direction:rtl;text-align:right">${a.title_ar}</td>
+          <td><span class="pill confirmed">${a.stage}</span></td>
+          <td><span class="pill ${a.published?'published':'draft'}">${a.published?'Published':'Draft'}</span></td>
+          <td><div class="tbl-actions">
+            <button class="tbl-btn edit" onclick="openArticleModal(${a.id})">Edit</button>
+            <button class="tbl-btn del" onclick="deleteItem('articles',${a.id})">Delete</button>
+          </div></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+function openArticleModal(id){
+  const a=id?articles.find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=a?'Edit Article':'Add Article';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Title (English)</label><input id="fa-title" value="${a?a.title:''}" placeholder="Article title"></div>
+    <div class="form-group"><label class="form-label">Title (Arabic)</label><input id="fa-title-ar" value="${a?a.title_ar:''}" placeholder="عنوان المقال" dir="rtl"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Journey Stage</label>
+        <select id="fa-stage">${['pregnant','new_mom','trying'].map(s=>`<option value="${s}" ${a&&a.stage===s?'selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select id="fa-pub"><option value="true" ${!a||a.published?'selected':''}>Published</option><option value="false" ${a&&!a.published?'selected':''}>Draft</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Body (English)</label><textarea id="fa-body" rows="4" placeholder="Article body..."></textarea></div>`;
+  document.getElementById('modal-save-btn').onclick=()=>{
+    const d={title:document.getElementById('fa-title').value,title_ar:document.getElementById('fa-title-ar').value,stage:document.getElementById('fa-stage').value,published:document.getElementById('fa-pub').value==='true'};
+    if(id){const i=articles.findIndex(x=>x.id===id);if(i>=0)articles[i]={...articles[i],...d};}
+    else articles.push({id:++nextId,...d});
+    showToast((id?'Article updated':'Article added')+' ✓'); closeModal(); renderArticles();
+  };
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+/* ── BRANDS SECTION ──────────────────────────────────────── */
+function renderBrands(){
+  const el=document.getElementById('admin-content');
+  el.innerHTML=`
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="table-title">Brand Partners (${brands.length})</span>
+        <div class="table-toolbar-right"><button class="add-btn" onclick="openBrandModal()">+ Add Brand</button></div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>Name</th><th>Featured</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody>${brands.map(b=>`<tr>
+          <td><div class="cell-img">🏢</div></td>
+          <td class="cell-bold">${b.name}</td>
+          <td><span class="pill ${b.featured?'featured':'inactive'}">${b.featured?'★ Featured':'Standard'}</span></td>
+          <td><span class="pill ${b.active?'active':'inactive'}">${b.active?'Active':'Inactive'}</span></td>
+          <td><div class="tbl-actions">
+            <button class="tbl-btn edit" onclick="openBrandModal(${b.id})">Edit</button>
+            <button class="tbl-btn del" onclick="deleteItem('brands',${b.id})">Delete</button>
+          </div></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+function openBrandModal(id){
+  const b=id?brands.find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=b?'Edit Brand':'Add Brand';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Brand Name</label><input id="fb-name" value="${b?b.name:''}" placeholder="Brand name"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Featured</label>
+        <select id="fb-feat"><option value="true" ${b&&b.featured?'selected':''}>★ Featured</option><option value="false" ${!b||!b.featured?'selected':''}>Standard</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select id="fb-active"><option value="true" ${!b||b.active?'selected':''}>Active</option><option value="false" ${b&&!b.active?'selected':''}>Inactive</option></select>
+      </div>
+    </div>`;
+  document.getElementById('modal-save-btn').onclick=()=>{
+    const d={name:document.getElementById('fb-name').value,featured:document.getElementById('fb-feat').value==='true',active:document.getElementById('fb-active').value==='true'};
+    if(id){const i=brands.findIndex(x=>x.id===id);if(i>=0)brands[i]={...brands[i],...d};}
+    else brands.push({id:++nextId,...d});
+    showToast((id?'Brand updated':'Brand added')+' ✓'); closeModal(); renderBrands();
+  };
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+/* ── MALLS SECTION ───────────────────────────────────────── */
+function renderMalls(){
+  const el=document.getElementById('admin-content');
+  el.innerHTML=`
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="table-title">Mall Partners (${mallsData.length})</span>
+        <div class="table-toolbar-right"><button class="add-btn" onclick="openMallModal()">+ Add Mall</button></div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>Mall Name</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>${mallsData.map(m=>`<tr>
+          <td><div class="cell-img">🏬</div></td>
+          <td class="cell-bold">${m.name}</td>
+          <td>${m.location}</td>
+          <td><span class="pill ${m.active?'active':'inactive'}">${m.active?'Active':'Inactive'}</span></td>
+          <td><div class="tbl-actions">
+            <button class="tbl-btn edit" onclick="openMallModal(${m.id})">Edit</button>
+            <button class="tbl-btn del" onclick="deleteItem('malls',${m.id})">Delete</button>
+          </div></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+function openMallModal(id){
+  const m=id?mallsData.find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=m?'Edit Mall':'Add Mall';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group"><label class="form-label">Mall Name</label><input id="fm-name" value="${m?m.name:''}" placeholder="Mall name"></div>
+    <div class="form-group"><label class="form-label">Location / Area</label><input id="fm-loc" value="${m?m.location:''}" placeholder="New Cairo, 6th October..."></div>
+    <div class="form-group"><label class="form-label">Status</label>
+      <select id="fm-active"><option value="true" ${!m||m.active?'selected':''}>Active</option><option value="false" ${m&&!m.active?'selected':''}>Inactive</option></select>
+    </div>`;
+  document.getElementById('modal-save-btn').onclick=()=>{
+    const d={name:document.getElementById('fm-name').value,location:document.getElementById('fm-loc').value,active:document.getElementById('fm-active').value==='true'};
+    if(id){const i=mallsData.findIndex(x=>x.id===id);if(i>=0)mallsData[i]={...mallsData[i],...d};}
+    else mallsData.push({id:++nextId,...d});
+    showToast((id?'Mall updated':'Mall added')+' ✓'); closeModal(); renderMalls();
+  };
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+/* ── USERS SECTION ───────────────────────────────────────── */
+function renderUsers(){
+  const el=document.getElementById('admin-content');
+  el.innerHTML=`
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="table-title">Users (${users.length})</span>
+        <div class="table-toolbar-right">
+          <input class="search-input" placeholder="🔍  Search users...">
+        </div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Avatar</th><th>Name</th><th>Contact</th><th>Stage</th><th>Week</th><th>Subscription</th><th>Status</th><th>Joined</th></tr></thead>
+        <tbody>${users.map(u=>`<tr>
+          <td><div class="admin-av" style="width:32px;height:32px;font-size:11px;flex-shrink:0">${u.name.charAt(0)}</div></td>
+          <td class="cell-bold">${u.name}</td>
+          <td style="color:var(--ink-3);font-size:12px">${u.email}</td>
+          <td>${u.stage}</td>
+          <td>${u.week}</td>
+          <td><span class="pill ${u.sub==='pro'?'featured':'inactive'}">${u.sub==='pro'?'Pro':'Free'}</span></td>
+          <td><span class="pill ${u.status==='active'?'active':'inactive'}">${u.status}</span></td>
+          <td style="color:var(--ink-3)">${u.joined}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+
+/* ── TABLE FILTER ────────────────────────────────────────── */
+function filterTable(input,tbodyId,attr){
+  const q=input.value.toLowerCase();
+  const tb=document.getElementById(tbodyId);
+  if(!tb) return;
+  tb.querySelectorAll('tr').forEach(row=>{
+    const cell=row.querySelector('[data-'+attr+']');
+    row.style.display=(!q||!cell||cell.dataset[attr]?.includes(q))?'':'none';
+  });
+}
+
+/* ── MODAL ───────────────────────────────────────────────── */
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+/* ── TOAST ───────────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.remove('hidden');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hidden'),2600);
+}
+</script>
+
+<script id="logo-injector">
+(function(){
+  var t="/logo-teal.png", w="/logo-white.png";
+  document.querySelectorAll(".logo-teal").forEach(function(el){el.src=t;});
+  document.querySelectorAll(".logo-white").forEach(function(el){el.src=w;});
+})();
+</script></body>
+</html>
